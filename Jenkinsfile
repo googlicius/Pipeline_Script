@@ -1,37 +1,57 @@
 pipeline {
-    agent none
-    stages {
-	
-	stage('Non-Parallel Stage') {
-	    agent {
-                        label "master"
+    agent any
+    stages{
+        stage("Build") {
+            steps {
+                echo "Building project..."
+                sh 'Build.sh'
+            }
+            post {
+                success {
+                    echo "========Build successfully========"
                 }
-        steps {
-                echo 'This stage will be executed first'
-                }
-        }
-
-	
-        stage('Run Tests') {
-            parallel {
-                stage('Test On Windows') {
-                    agent {
-                        label "Windows_Node"
-                    }
-                    steps {
-                        echo "Task1 on Agent"
-                    }
-                    
-                }
-                stage('Test On Master') {
-                    agent {
-                        label "master"
-                    }
-                    steps {
-						echo "Task1 on Master"
-					}
+                failure {
+                    echo "========Build failed========"
                 }
             }
+        }
+        stage("Test") {
+            steps {
+                echo "Testing project..."
+                sh 'Test.sh'
+            }
+            post {
+                success {
+                    echo "========Test successfully========"
+                }
+                failure {
+                    echo "========Test failed========"
+                }
+            }
+        }
+        stage("Run") {
+            steps {
+                echo "Running project..."
+            }
+            post {
+                success {
+                    echo "========Run successfully========"
+                }
+                failure {
+                    echo "========Run failed========"
+                }
+            }
+        }
+    }
+    post {
+        always {
+            echo "========always========"
+        }
+        success {
+            echo "========pipeline executed successfully ========"
+        }
+        failure {
+            echo "========pipeline execution failed========"
         }
     }
 }
